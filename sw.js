@@ -9,7 +9,7 @@
 // IMPORTANT: If you make any changes to your HTML, CSS, or this file,
 // you MUST increment this version number (e.g., 'v2', 'v3', etc.).
 // This tells the browser to install the new service worker and cache the new files.
-const CACHE_NAME = 'activity-tracker-cache-v2a';
+const CACHE_NAME = 'activity-tracker-cache-v2b';
 
 // The name of your GitHub repository. This is crucial for creating the correct paths.
 const REPO_NAME = '/activity-tracker-html';
