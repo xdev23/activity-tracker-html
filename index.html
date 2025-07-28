@@ -127,7 +127,6 @@
         .graph-legend .day { border: 1px solid rgba(0,0,0,0.1); }
         body.dark-mode .graph-legend .day { border: 1px solid rgba(255,255,255,0.1); }
         
-        /* New Legend Overlay Styles */
         .legend-item-wrapper {
             position: relative;
             display: flex;
@@ -160,7 +159,6 @@
         .legend-item-wrapper:hover .legend-overlay {
             display: block;
         }
-        /* End New Styles */
 
         .activity-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; }
         .timer-btn { padding: 5px 10px; border-radius: 4px; border: 1px solid var(--border-color); cursor: pointer; background-color: var(--btn-bg-color); color: var(--text-color); transition: background-color 0.2s, color 0.2s; font-size: 12px; }
@@ -208,6 +206,45 @@
         .reorder-btn { background-color: var(--btn-bg-color); border: 1px solid var(--text-muted-color); color: var(--text-muted-color); border-radius: 4px; width: 28px; height: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background-color 0.2s; }
         .reorder-btn:hover:not(:disabled) { background-color: var(--btn-hover-bg-color); }
         .reorder-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+        .about-card {
+            margin-top: 20px;
+        }
+
+        .about-card h4 {
+            margin-bottom: 12px;
+            font-size: 1.1em;
+            color: var(--text-color);
+        }
+        
+        .about-card h5 {
+            margin-top: 16px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .about-card p {
+            font-size: 14px;
+            color: var(--text-muted-color);
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .about-card ul {
+            font-size: 14px;
+            color: var(--text-muted-color);
+            line-height: 1.5;
+            padding-left: 20px;
+            margin: 0;
+        }
+
+        .about-card li {
+            margin-bottom: 6px;
+        }
+
+        .about-card li strong {
+            color: var(--text-color);
+        }
 
         @media (max-width: 600px) {
             body {
@@ -294,45 +331,6 @@
                 width: 95%;
             }
         }
-        
-                .about-card {
-            margin-top: 20px;
-        }
-
-        .about-card h4 {
-            margin-bottom: 12px;
-            font-size: 1.1em;
-            color: var(--text-color);
-        }
-        
-        .about-card h5 {
-            margin-top: 16px;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-
-        .about-card p {
-            font-size: 14px;
-            color: var(--text-muted-color);
-            line-height: 1.5;
-            margin: 0;
-        }
-
-        .about-card ul {
-            font-size: 14px;
-            color: var(--text-muted-color);
-            line-height: 1.5;
-            padding-left: 20px;
-            margin: 0;
-        }
-
-        .about-card li {
-            margin-bottom: 6px;
-        }
-
-        .about-card li strong {
-            color: var(--text-color);
-        }
     </style>
 </head>
 <body class="light-mode">
@@ -383,7 +381,6 @@
              <div id="archived-list"></div>
         </div>
 
-        <!-- Start: New Description Section -->
         <div class="card about-card">
             <h4>About This Activity Tracker</h4>
             <p>This tool is a comprehensive, browser-based solution designed to help you monitor and build your habits. All your data is stored locally in your browser, ensuring your privacy and providing offline access without needing an account.</p>
@@ -398,10 +395,7 @@
                 <li><strong>Light & Dark Modes:</strong> Switch between themes for your viewing comfort.</li>
             </ul>
         </div>
-        <!-- End: New Description Section -->
     </div>
-
-    
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -606,7 +600,6 @@
                 
                 const lastSuccessDate = goalMetDates[goalMetDates.length - 1];
 
-                // Calculate current streak
                 if (lastSuccessDate.getTime() === today.getTime() || lastSuccessDate.getTime() === yesterday.getTime()) {
                     currentStreak = 1;
                     for (let i = goalMetDates.length - 2; i >= 0; i--) {
@@ -622,7 +615,6 @@
                     }
                 }
 
-                // Calculate longest streak
                 let currentRun = 0;
                 if (goalMetDates.length > 0) {
                     currentRun = 1;
@@ -731,7 +723,7 @@
         function stopTimer(name) { if (timers[name]) { clearInterval(timers[name]); delete timers[name]; saveState(); } }
         
         function showModal(title, message, inputsHTML, onConfirm) {
-            document.getElementById('modal-error-message').style.display = 'none'; // Clear previous errors
+            document.getElementById('modal-error-message').style.display = 'none';
             document.getElementById('modal-title').textContent = title;
             document.getElementById('modal-message').innerHTML = message;
             document.getElementById('modal-inputs').innerHTML = inputsHTML || '';
@@ -747,17 +739,16 @@
 
         function hideModal() {
             modal.classList.remove('visible');
-            document.getElementById('modal-error-message').style.display = 'none'; // Clear error on close
+            document.getElementById('modal-error-message').style.display = 'none';
             modalConfirmCallback = () => {};
-            // Restore buttons to their default state for the next time the modal is used.
             const confirmBtn = modal.querySelector('[data-action="modal-confirm"]');
             const cancelBtn = modal.querySelector('[data-action="modal-cancel"]');
             confirmBtn.textContent = 'Confirm';
-            cancelBtn.style.display = ''; // Let flexbox handle the display
+            cancelBtn.style.display = '';
         }
 
         function showInfoModal(title, message) {
-            showModal(title, message, null, hideModal); // Confirm just closes the modal.
+            showModal(title, message, null, hideModal);
             const confirmBtn = modal.querySelector('[data-action="modal-confirm"]');
             const cancelBtn = modal.querySelector('[data-action="modal-cancel"]');
             confirmBtn.textContent = 'OK';
@@ -924,7 +915,6 @@
 
         document.getElementById('import-file').addEventListener('change', importData);
 
-        // --- Tooltip Logic (with mobile/touch support) ---
         let touchedTooltipElement = null;
 
         function hideTooltip() {
@@ -983,7 +973,7 @@
             }
             if (dayElement) {
                 e.preventDefault();
-                hideTooltip(); // Hide any lingering mouse-based tooltips
+                hideTooltip();
                 showTooltip(dayElement.dataset.tooltipText, e.touches[0].clientX, e.touches[0].clientY);
                 touchedTooltipElement = dayElement;
                 return;
@@ -1009,16 +999,68 @@
         loadState();
         renderAll();
 
-        // --- Register the Service Worker ---
+        // --- NEW: Service Worker Registration ---
+
+        // The entire service worker script is now a JavaScript string.
+        const serviceWorkerScript = `
+            const CACHE_NAME = 'activity-tracker-cache-v1';
+            // Correctly define the paths based on your GitHub pages URL.
+            const URLS_TO_CACHE = [
+                '/activity-tracker-html/',
+                '/activity-tracker-html/index.html'
+            ];
+
+            self.addEventListener('install', event => {
+                event.waitUntil(
+                    caches.open(CACHE_NAME)
+                        .then(cache => {
+                            console.log('Opened cache and caching files');
+                            return cache.addAll(URLS_TO_CACHE);
+                        })
+                );
+            });
+
+            self.addEventListener('fetch', event => {
+                event.respondWith(
+                    caches.match(event.request)
+                        .then(response => {
+                            if (response) {
+                                return response; // Serve from cache
+                            }
+                            return fetch(event.request); // Fetch from network
+                        })
+                );
+            });
+
+            self.addEventListener('activate', event => {
+                const cacheWhitelist = [CACHE_NAME];
+                event.waitUntil(
+                    caches.keys().then(cacheNames => {
+                        return Promise.all(
+                            cacheNames.map(cacheName => {
+                                if (cacheWhitelist.indexOf(cacheName) === -1) {
+                                    return caches.delete(cacheName);
+                                }
+                            })
+                        );
+                    })
+                );
+            });
+        `;
+
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                .then(registration => {
-                    console.log('Service Worker registered successfully:', registration);
-                })
-                .catch(err => {
-                    console.error('Service Worker registration failed:', err);
-                });
+                // Create a "virtual" file for the service worker
+                const blob = new Blob([serviceWorkerScript], { type: 'application/javascript' });
+                const swURL = URL.createObjectURL(blob);
+
+                navigator.serviceWorker.register(swURL)
+                    .then(registration => {
+                        console.log('Service Worker registered successfully from in-line script:', registration);
+                    })
+                    .catch(err => {
+                        console.error('Service Worker registration failed:', err);
+                    });
             });
         }
     });
