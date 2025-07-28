@@ -127,6 +127,7 @@
         .graph-legend .day { border: 1px solid rgba(0,0,0,0.1); }
         body.dark-mode .graph-legend .day { border: 1px solid rgba(255,255,255,0.1); }
         
+        /* New Legend Overlay Styles */
         .legend-item-wrapper {
             position: relative;
             display: flex;
@@ -159,6 +160,7 @@
         .legend-item-wrapper:hover .legend-overlay {
             display: block;
         }
+        /* End New Styles */
 
         .activity-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; }
         .timer-btn { padding: 5px 10px; border-radius: 4px; border: 1px solid var(--border-color); cursor: pointer; background-color: var(--btn-bg-color); color: var(--text-color); transition: background-color 0.2s, color 0.2s; font-size: 12px; }
@@ -206,45 +208,6 @@
         .reorder-btn { background-color: var(--btn-bg-color); border: 1px solid var(--text-muted-color); color: var(--text-muted-color); border-radius: 4px; width: 28px; height: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background-color 0.2s; }
         .reorder-btn:hover:not(:disabled) { background-color: var(--btn-hover-bg-color); }
         .reorder-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-
-        .about-card {
-            margin-top: 20px;
-        }
-
-        .about-card h4 {
-            margin-bottom: 12px;
-            font-size: 1.1em;
-            color: var(--text-color);
-        }
-        
-        .about-card h5 {
-            margin-top: 16px;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-
-        .about-card p {
-            font-size: 14px;
-            color: var(--text-muted-color);
-            line-height: 1.5;
-            margin: 0;
-        }
-
-        .about-card ul {
-            font-size: 14px;
-            color: var(--text-muted-color);
-            line-height: 1.5;
-            padding-left: 20px;
-            margin: 0;
-        }
-
-        .about-card li {
-            margin-bottom: 6px;
-        }
-
-        .about-card li strong {
-            color: var(--text-color);
-        }
 
         @media (max-width: 600px) {
             body {
@@ -331,9 +294,85 @@
                 width: 95%;
             }
         }
+        
+        .about-card {
+            margin-top: 20px;
+        }
+
+        .about-card h4 {
+            margin-bottom: 12px;
+            font-size: 1.1em;
+            color: var(--text-color);
+        }
+        
+        .about-card h5 {
+            margin-top: 16px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .about-card p {
+            font-size: 14px;
+            color: var(--text-muted-color);
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .about-card ul {
+            font-size: 14px;
+            color: var(--text-muted-color);
+            line-height: 1.5;
+            padding-left: 20px;
+            margin: 0;
+        }
+
+        .about-card li {
+            margin-bottom: 6px;
+        }
+
+        .about-card li strong {
+            color: var(--text-color);
+        }
+
+        /* NEW CSS for the update banner */
+        #update-banner {
+            display: none; /* Hidden by default */
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #0969da;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 9999;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            font-size: 14px;
+            text-align: center;
+        }
+        #update-banner button {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            margin-left: 15px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        #update-banner button:hover {
+            background: rgba(255,255,255,0.3);
+        }
     </style>
 </head>
 <body class="light-mode">
+
+    <!-- NEW HTML for the update banner -->
+    <div id="update-banner">
+        A new version of this app is available.
+        <button id="reload-button">Refresh</button>
+    </div>
 
     <div id="tooltip"></div>
     <div id="custom-modal" class="modal-overlay">
@@ -358,7 +397,7 @@
                     <button data-action="toggle-theme" class="btn" style="font-size: 12px;">Toggle Theme</button>
                 </div>
             </h1>
-            <p> use it without internet</p>
+            <p> use it without internet haha</p>
             <div class="controls">
                 <div class="input-group">
                     <label for="activity-name-input">Activity Name</label>
@@ -382,6 +421,7 @@
              <div id="archived-list"></div>
         </div>
 
+        <!-- Start: New Description Section -->
         <div class="card about-card">
             <h4>About This Activity Tracker</h4>
             <p>This tool is a comprehensive, browser-based solution designed to help you monitor and build your habits. All your data is stored locally in your browser, ensuring your privacy and providing offline access without needing an account.</p>
@@ -396,12 +436,14 @@
                 <li><strong>Light & Dark Modes:</strong> Switch between themes for your viewing comfort.</li>
             </ul>
         </div>
+        <!-- End: New Description Section -->
     </div>
+
+    
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // --- ALL OF YOUR EXISTING APP LOGIC GOES HERE ---
-        // (The code is exactly the same as you provided, so it is omitted here for brevity)
+        // --- Constants and State ---
         const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
         let activities = {};
         let timers = {};
@@ -602,6 +644,7 @@
                 
                 const lastSuccessDate = goalMetDates[goalMetDates.length - 1];
 
+                // Calculate current streak
                 if (lastSuccessDate.getTime() === today.getTime() || lastSuccessDate.getTime() === yesterday.getTime()) {
                     currentStreak = 1;
                     for (let i = goalMetDates.length - 2; i >= 0; i--) {
@@ -617,6 +660,7 @@
                     }
                 }
 
+                // Calculate longest streak
                 let currentRun = 0;
                 if (goalMetDates.length > 0) {
                     currentRun = 1;
@@ -725,7 +769,7 @@
         function stopTimer(name) { if (timers[name]) { clearInterval(timers[name]); delete timers[name]; saveState(); } }
         
         function showModal(title, message, inputsHTML, onConfirm) {
-            document.getElementById('modal-error-message').style.display = 'none';
+            document.getElementById('modal-error-message').style.display = 'none'; // Clear previous errors
             document.getElementById('modal-title').textContent = title;
             document.getElementById('modal-message').innerHTML = message;
             document.getElementById('modal-inputs').innerHTML = inputsHTML || '';
@@ -741,16 +785,17 @@
 
         function hideModal() {
             modal.classList.remove('visible');
-            document.getElementById('modal-error-message').style.display = 'none';
+            document.getElementById('modal-error-message').style.display = 'none'; // Clear error on close
             modalConfirmCallback = () => {};
+            // Restore buttons to their default state for the next time the modal is used.
             const confirmBtn = modal.querySelector('[data-action="modal-confirm"]');
             const cancelBtn = modal.querySelector('[data-action="modal-cancel"]');
             confirmBtn.textContent = 'Confirm';
-            cancelBtn.style.display = '';
+            cancelBtn.style.display = ''; // Let flexbox handle the display
         }
 
         function showInfoModal(title, message) {
-            showModal(title, message, null, hideModal);
+            showModal(title, message, null, hideModal); // Confirm just closes the modal.
             const confirmBtn = modal.querySelector('[data-action="modal-confirm"]');
             const cancelBtn = modal.querySelector('[data-action="modal-cancel"]');
             confirmBtn.textContent = 'OK';
@@ -917,6 +962,7 @@
 
         document.getElementById('import-file').addEventListener('change', importData);
 
+        // --- Tooltip Logic (with mobile/touch support) ---
         let touchedTooltipElement = null;
 
         function hideTooltip() {
@@ -975,7 +1021,7 @@
             }
             if (dayElement) {
                 e.preventDefault();
-                hideTooltip();
+                hideTooltip(); // Hide any lingering mouse-based tooltips
                 showTooltip(dayElement.dataset.tooltipText, e.touches[0].clientX, e.touches[0].clientY);
                 touchedTooltipElement = dayElement;
                 return;
@@ -1001,21 +1047,55 @@
         loadState();
         renderAll();
 
-        // --- FINAL Service Worker Registration ---
+        // --- FINAL, ROBUST Service Worker Registration ---
         if ('serviceWorker' in navigator) {
-            // The path must be absolute from the domain root.
-            // Your URL is https://xdev23.github.io/activity-tracker-html/
-            // So the path to sw.js is /activity-tracker-html/sw.js
             const serviceWorkerUrl = '/activity-tracker-html/sw.js';
+
+            // This function handles the registration and the update logic
+            const registerServiceWorker = async () => {
+                try {
+                    const registration = await navigator.serviceWorker.register(serviceWorkerUrl);
+
+                    // Logic to handle updates
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+                        console.log('Service Worker: New version found, installing...');
+
+                        newWorker.addEventListener('statechange', () => {
+                            // The new worker has successfully installed
+                            if (newWorker.state === 'installed') {
+                                // We check if there's an old worker controlling the page
+                                if (navigator.serviceWorker.controller) {
+                                    // Show the "Update Available" banner
+                                    const updateBanner = document.getElementById('update-banner');
+                                    const reloadButton = document.getElementById('reload-button');
+                                    
+                                    updateBanner.style.display = 'block';
+
+                                    reloadButton.addEventListener('click', () => {
+                                        // When the user clicks, the new worker will activate and the page will reload.
+                                        window.location.reload();
+                                    });
+                                }
+                            }
+                        });
+                    });
+                } catch (error) {
+                    console.error('Service Worker registration failed:', error);
+                }
+            };
             
+            // Listen for the controller changing - this happens when a new SW activates
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (refreshing) return;
+                window.location.reload();
+                refreshing = true;
+            });
+
+            // Start the registration process when the page loads
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register(serviceWorkerUrl)
-                .then(registration => {
-                    console.log('Service Worker registered successfully. Scope is:', registration.scope);
-                })
-                .catch(err => {
-                    console.error('Service Worker registration failed:', err);
-                });
+                registerServiceWorker();
             });
         }
     });
