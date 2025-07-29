@@ -11,7 +11,7 @@
             
             --border-color: var(--border-color-light); --bg-color: var(--bg-color-light); --card-bg-color: var(--card-bg-color-light); --text-color: var(--text-color-light); --text-muted-color: var(--text-muted-color-light);
             
-            --day-size: 14px; --day-gap: 4px; --week-width: calc(var(--day-size) + var(--day-gap));
+            --day-size: 14px; --day-gap: 3px; --week-width: calc(var(--day-size) + var(--day-gap));
             --day-bg-default: #ebedf0; --day-bg-alt-month: #f6f8fa;
             --level-1: #9be9a8; --level-2: #40c463; --level-3: #30a14e; --level-4: #216e39;
 
@@ -48,7 +48,7 @@
 
 
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 15px; transition: background-color 0.3s, color 0.3s; }
-        .main-container { max-width: 1050px; margin: auto; display: flex; flex-direction: column; gap: 20px; }
+        .main-container { max-width: 1150px; margin: auto; display: flex; flex-direction: column; gap: 20px; }
         .card { border: 1px solid var(--border-color); border-radius: 6px; padding: 16px; background-color: var(--card-bg-color); transition: background-color 0.3s, border-color 0.3s; }
         h1, h2, h3 { color: var(--text-color); margin-top: 0; margin-bottom: 16px; transition: color 0.3s; }
         h1 { display: flex; justify-content: space-between; align-items: center; }
@@ -74,7 +74,7 @@
 
         .graph-container::after { content: ""; display: table; clear: both; }
         .graph-scroll-wrapper { overflow-x: auto; padding-top: 10px; }
-        .graph-content { display: inline-grid; grid-template-areas: "y-axis months" "y-axis grid"; grid-template-columns: auto 1fr; grid-template-rows: auto 1fr; gap: 8px; }
+        .graph-content { display: inline-grid; grid-template-areas: "y-axis months" "y-axis grid"; grid-template-columns: auto 1fr; grid-template-rows: auto 0fr; gap: 8px; padding-right: 10px; padding-bottom: 5px; }
         .day-labels { 
             grid-area: y-axis; 
             display: grid; 
@@ -95,7 +95,7 @@
         .month-labels { grid-area: months; display: grid; grid-auto-flow: column; gap: var(--day-gap); font-size: 12px; color: var(--text-muted-color); }
         .month-label { text-align: left; }
         .tracker-grid { grid-area: grid; display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, var(--day-size)); gap: var(--day-gap); }
-        .day { position: relative; width: var(--day-size); height: var(--day-size); background-color: var(--day-bg-default); border-radius: 2px; box-sizing: border-box; }
+        .day { position: relative; width: var(--day-size); height: var(--day-size); background-color: var(--day-bg-default); border-radius: 3px; box-sizing: border-box; }
         .day.alt-month { background-color: var(--day-bg-alt-month); }
         .day.is-creation-date { outline: 2px solid #0969da; }
         .day.is-today { outline: 2px solid #d10f0f; }
@@ -121,10 +121,10 @@
             gap: 8px;
             font-size: 12px;
             color: var(--text-muted-color);
-            margin-top: 5px;
+            margin-top: 10px;
             float: right;
         }
-        .graph-legend .day { border: 1px solid rgba(0,0,0,0.1); }
+        .graph-legend .day { border: 8px solid rgba(0,0,0,0.1); }
         body.dark-mode .graph-legend .day { border: 1px solid rgba(255,255,255,0.1); }
         
         /* New Legend Overlay Styles */
@@ -209,16 +209,89 @@
         .reorder-btn:hover:not(:disabled) { background-color: var(--btn-hover-bg-color); }
         .reorder-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
+        /* START: MOBILE VERTICAL SCROLL CHANGES */
+        @media (max-width: 768px) {
+            .graph-scroll-wrapper {
+                overflow-y: auto;
+                overflow-x: hidden;
+                height: 700px; 
+                padding-top: 0;
+            }
+
+            .graph-content {
+                display: grid;
+                grid-template-columns: 35px 1fr;
+                gap: 10px;
+                padding: 45px;
+                padding-left: 10px;
+            }
+
+            .day-labels {
+                grid-column: 1;
+                display: flex;
+                flex-direction: column;
+                position: static;
+                padding: 0;
+                padding-top: 0px; 
+            }
+            
+            .day-labels span {
+                height: auto;
+                font-size: 12px;
+                writing-mode: vertical-rl;
+                transform: rotate(180deg);
+                text-align: center;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .month-labels {
+                grid-column: 2;
+                display: grid; 
+                grid-template-columns: repeat(7, 1fr); 
+                gap: var(--day-gap); 
+                position: sticky;
+                top: 0;
+                background-color: var(--card-bg-color);
+                z-index: 2;
+                padding: 10px 0;
+                border-bottom: 1px solid var(--border-color);
+            }
+            .month-labels span {
+                font-size: 12px;
+                color: var(--text-muted-color);
+                text-align: center;
+            }
+
+            .tracker-grid {
+                grid-column: 2;
+                grid-auto-flow: row;
+                grid-template-columns: repeat(7, 1fr);
+                grid-template-rows: unset;
+                gap: var(--day-gap);
+            }
+            
+            .day {
+                width: auto; 
+                height: auto; 
+                aspect-ratio: 1 / 1; 
+            }
+            
+            .day.goal-completed::after {
+                width: 25%;
+                height: 50%;
+                top: 15%;
+                left: 35%;
+                border-width: 0 2px 2px 0;
+            }
+        }
+        /* END: MOBILE VERTICAL SCROLL CHANGES */
+
         @media (max-width: 600px) {
             body {
                 padding: 10px;
                 -webkit-text-size-adjust: 100%;
-            }
-            .graph-legend {
-                float: none;
-                justify-content: center;
-                flex-wrap: wrap;
-                gap: 8px;
             }
 
             h1 {
@@ -455,7 +528,9 @@
             const activityYears = new Set([currentYear, parseInt(activityData.creationDate.substring(0,4))]);
             Object.keys(activityData.log).forEach(date => activityYears.add(parseInt(date.substring(0,4))));
             const sortedYears = Array.from(activityYears).sort((a,b) => b-a);
-            let yearNavHTML = sortedYears.map(year => `<button class="year-btn ${year === currentYear ? 'active' : ''}" data-action="change-year" data-year="${year}">${year}</button>`).join('');
+
+            let yearNavHTML = `<button class="year-btn" data-action="go-to-today">Today</button>` + 
+                              sortedYears.map(year => `<button class="year-btn ${year === currentYear ? 'active' : ''}" data-action="change-year" data-year="${year}">${year}</button>`).join('');
 
             card.innerHTML = `
                 <div class="activity-header">
@@ -525,51 +600,98 @@
         function populateGridAndLabels(activityName, year) {
             const card = activitiesContainer.querySelector(`.card[data-name="${activityName}"]`);
             if (!card) return;
+
             const gridElement = card.querySelector('.tracker-grid');
             const monthsElement = card.querySelector('.month-labels');
+            const sideDayLabels = card.querySelector('.day-labels');
             const activityData = activities[activityName];
             const calendarGridData = createCalendarGridDataForYear(year);
+            const todayString = getLocalDateString(new Date());
 
             gridElement.innerHTML = '';
             monthsElement.innerHTML = '';
-            const todayString = getLocalDateString(new Date());
-            const totalWeeks = Math.ceil(calendarGridData.length / 7);
+            sideDayLabels.innerHTML = '';
 
-            monthsElement.style.gridTemplateColumns = `repeat(${totalWeeks}, var(--day-size))`;
-            gridElement.style.gridTemplateColumns = `repeat(${totalWeeks}, var(--day-size))`;
+            const isMobile = window.innerWidth <= 768;
 
-            let lastMonth = -1;
-            calendarGridData.forEach((cell, index) => {
-                if (cell.type === 'empty') { gridElement.appendChild(document.createElement('div')); return; }
+            if (isMobile) {
+                ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].forEach(day => {
+                    monthsElement.appendChild(Object.assign(document.createElement('span'), { textContent: day }));
+                });
+
+                calendarGridData.forEach(cell => {
+                    gridElement.appendChild(cell.type === 'empty' ? document.createElement('div') : createDayElement(cell.date, activityData, todayString));
+                });
                 
-                const weekIndex = Math.floor(index / 7);
-                const date = cell.date;
-                const month = date.getMonth();
+                requestAnimationFrame(() => {
+                    const firstDayCell = gridElement.querySelector('.day[data-date]');
+                    if (!firstDayCell) return;
 
-                if (month !== lastMonth) {
-                    lastMonth = month;
-                    const monthLabel = document.createElement('div');
-                    monthLabel.className = 'month-label';
-                    monthLabel.textContent = MONTH_NAMES[lastMonth];
-                    monthLabel.style.gridColumn = `${weekIndex + 1} / span 4`;
-                    monthsElement.appendChild(monthLabel);
-                }
-                const day = document.createElement('div');
-                const dateString = getLocalDateString(date);
-                day.className = 'day';
-                day.dataset.date = dateString;
-                if (month % 2 !== 0) day.classList.add('alt-month');
-                
-                const totalSeconds = activityData.log[dateString] || 0;
-                const goalForDay = getGoalForDate(activityData, dateString);
-                day.dataset.tooltipText = `${formatTime(totalSeconds)} of ${goalForDay}m goal on ${dateString}`;
-                updateGridSquare(day, totalSeconds, date, goalForDay);
-                if (dateString === todayString) day.classList.add('is-today');
-                if (dateString === activityData.creationDate) day.classList.add('is-creation-date');
-                gridElement.appendChild(day);
-            });
+                    const dayHeight = firstDayCell.getBoundingClientRect().height;
+                    const gridGap = parseFloat(getComputedStyle(gridElement).rowGap);
+                    
+                    sideDayLabels.style.gap = `${gridGap}px`;
+
+                    const monthRowCounts = Array(12).fill(0);
+                    calendarGridData.forEach(cell => {
+                        if (cell.type === 'date') monthRowCounts[cell.date.getMonth()]++;
+                    });
+                    
+                    monthRowCounts.forEach((count, i, arr) => arr[i] = Math.ceil(count / 7));
+                    
+                    monthRowCounts.forEach((rowCount, monthIndex) => {
+                        if (rowCount > 0) {
+                            const monthLabel = document.createElement('span');
+                            monthLabel.textContent = MONTH_NAMES[monthIndex];
+                            monthLabel.style.height = `${(rowCount * dayHeight) + ((rowCount - 1) * gridGap)}px`;
+                            sideDayLabels.appendChild(monthLabel);
+                        }
+                    });
+                });
+
+            } else {
+                sideDayLabels.innerHTML = `<span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>`;
+                const totalWeeks = Math.ceil(calendarGridData.length / 7);
+                monthsElement.style.gridTemplateColumns = `repeat(${totalWeeks}, var(--week-width))`;
+                gridElement.style.gridTemplateColumns = `repeat(${totalWeeks}, var(--week-width))`;
+
+                let lastMonth = -1;
+                calendarGridData.forEach((cell, index) => {
+                    if (cell.type === 'empty') {
+                        gridElement.appendChild(document.createElement('div'));
+                        return;
+                    }
+                    const weekIndex = Math.floor(index / 7);
+                    const date = cell.date;
+                    if (date.getMonth() !== lastMonth) {
+                        lastMonth = date.getMonth();
+                        const monthLabel = Object.assign(document.createElement('div'), { className: 'month-label', textContent: MONTH_NAMES[lastMonth] });
+                        monthLabel.style.gridColumn = `${weekIndex + 1} / span 4`;
+                        monthsElement.appendChild(monthLabel);
+                    }
+                    gridElement.appendChild(createDayElement(date, activityData, todayString));
+                });
+            }
         }
-        
+
+        function createDayElement(date, activityData, todayString) {
+            const day = document.createElement('div');
+            const dateString = getLocalDateString(date);
+            day.className = 'day';
+            day.dataset.date = dateString;
+            if (date.getMonth() % 2 !== 0) day.classList.add('alt-month');
+            
+            const totalSeconds = activityData.log[dateString] || 0;
+            const goalForDay = getGoalForDate(activityData, dateString);
+            day.dataset.tooltipText = `${formatTime(totalSeconds)} of ${goalForDay}m goal on ${dateString}`;
+            updateGridSquare(day, totalSeconds, date, goalForDay);
+
+            if (dateString === todayString) day.classList.add('is-today');
+            if (dateString === activityData.creationDate) day.classList.add('is-creation-date');
+            
+            return day;
+        }
+
         function populateStats(name) {
             const card = document.querySelector(`.card[data-name="${name}"]`);
             if (!card) return;
@@ -606,7 +728,6 @@
                 
                 const lastSuccessDate = goalMetDates[goalMetDates.length - 1];
 
-                // Calculate current streak
                 if (lastSuccessDate.getTime() === today.getTime() || lastSuccessDate.getTime() === yesterday.getTime()) {
                     currentStreak = 1;
                     for (let i = goalMetDates.length - 2; i >= 0; i--) {
@@ -622,7 +743,6 @@
                     }
                 }
 
-                // Calculate longest streak
                 let currentRun = 0;
                 if (goalMetDates.length > 0) {
                     currentRun = 1;
@@ -731,7 +851,7 @@
         function stopTimer(name) { if (timers[name]) { clearInterval(timers[name]); delete timers[name]; saveState(); } }
         
         function showModal(title, message, inputsHTML, onConfirm) {
-            document.getElementById('modal-error-message').style.display = 'none'; // Clear previous errors
+            document.getElementById('modal-error-message').style.display = 'none';
             document.getElementById('modal-title').textContent = title;
             document.getElementById('modal-message').innerHTML = message;
             document.getElementById('modal-inputs').innerHTML = inputsHTML || '';
@@ -747,17 +867,16 @@
 
         function hideModal() {
             modal.classList.remove('visible');
-            document.getElementById('modal-error-message').style.display = 'none'; // Clear error on close
+            document.getElementById('modal-error-message').style.display = 'none';
             modalConfirmCallback = () => {};
-            // Restore buttons to their default state for the next time the modal is used.
             const confirmBtn = modal.querySelector('[data-action="modal-confirm"]');
             const cancelBtn = modal.querySelector('[data-action="modal-cancel"]');
             confirmBtn.textContent = 'Confirm';
-            cancelBtn.style.display = ''; // Let flexbox handle the display
+            cancelBtn.style.display = '';
         }
 
         function showInfoModal(title, message) {
-            showModal(title, message, null, hideModal); // Confirm just closes the modal.
+            showModal(title, message, null, hideModal);
             const confirmBtn = modal.querySelector('[data-action="modal-confirm"]');
             const cancelBtn = modal.querySelector('[data-action="modal-cancel"]');
             confirmBtn.textContent = 'OK';
@@ -824,7 +943,48 @@
                 }
                 case 'toggle-list': { const listContainer = card.querySelector('.historical-list-container'); const statsContainer = card.querySelector('.stats-container'); statsContainer.style.display = 'none'; const isListHidden = window.getComputedStyle(listContainer).display === 'none'; listContainer.style.display = isListHidden ? 'block' : 'none'; break; }
                 case 'toggle-stats': { const statsContainer = card.querySelector('.stats-container'); const listContainer = card.querySelector('.historical-list-container'); listContainer.style.display = 'none'; const areStatsHidden = window.getComputedStyle(statsContainer).display === 'none'; statsContainer.style.display = areStatsHidden ? 'block' : 'none'; break; }
-                case 'change-year': { card.querySelectorAll('.year-btn').forEach(btn => btn.classList.remove('active')); button.classList.add('active'); populateGridAndLabels(name, parseInt(button.dataset.year)); break; }
+                
+                // START: Enhanced "Today" button handler
+                case 'go-to-today': {
+                    const currentYear = new Date().getFullYear();
+                    const activeYearButton = card.querySelector('.year-btn.active');
+                    const activeYear = activeYearButton ? parseInt(activeYearButton.dataset.year) : null;
+
+                    // Only re-render if not already on the current year
+                    if (activeYear !== currentYear) {
+                        populateGridAndLabels(name, currentYear);
+                        card.querySelectorAll('.year-btn').forEach(btn => btn.classList.remove('active'));
+                        const currentYearBtn = card.querySelector(`.year-btn[data-year="${currentYear}"]`);
+                        if (currentYearBtn) currentYearBtn.classList.add('active');
+                    }
+
+                    // Defer scroll until the next paint cycle to ensure the element exists
+                    requestAnimationFrame(() => {
+                        const todayElement = card.querySelector('.day.is-today');
+                        if (todayElement) {
+                            todayElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            
+                            // Add a temporary highlight for better user feedback
+                            todayElement.style.transition = 'outline 0.1s ease-in-out, outline-color 0.1s ease-in-out';
+                            todayElement.style.outlineOffset = '2px';
+                            todayElement.style.outlineColor = 'rgba(9, 105, 218, 0.8)';
+
+                            setTimeout(() => {
+                                todayElement.style.outlineColor = '';
+                                todayElement.style.outlineOffset = '';
+                            }, 1500);
+                        }
+                    });
+                    break;
+                }
+                // END: Enhanced handler
+                
+                case 'change-year': { 
+                    card.querySelectorAll('.year-btn').forEach(btn => btn.classList.remove('active')); 
+                    button.classList.add('active'); 
+                    populateGridAndLabels(name, parseInt(button.dataset.year)); 
+                    break; 
+                }
             }
         });
         
@@ -924,7 +1084,6 @@
 
         document.getElementById('import-file').addEventListener('change', importData);
 
-        // --- Tooltip Logic (with mobile/touch support) ---
         let touchedTooltipElement = null;
 
         function hideTooltip() {
@@ -983,7 +1142,7 @@
             }
             if (dayElement) {
                 e.preventDefault();
-                hideTooltip(); // Hide any lingering mouse-based tooltips
+                hideTooltip();
                 showTooltip(dayElement.dataset.tooltipText, e.touches[0].clientX, e.touches[0].clientY);
                 touchedTooltipElement = dayElement;
                 return;
@@ -995,10 +1154,12 @@
         }, { passive: false });
         
         docBody.addEventListener('wheel', e => {
-            const scrollWrapper = e.target.closest('.graph-scroll-wrapper');
-            if (scrollWrapper && Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-                e.preventDefault();
-                scrollWrapper.scrollLeft += e.deltaY;
+            if (window.innerWidth > 768) {
+                const scrollWrapper = e.target.closest('.graph-scroll-wrapper');
+                if (scrollWrapper && Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+                    e.preventDefault();
+                    scrollWrapper.scrollLeft += e.deltaY;
+                }
             }
         }, { passive: false });
 
@@ -1008,6 +1169,15 @@
         }
         loadState();
         renderAll();
+
+        let lastRenderWidth = window.innerWidth;
+        window.addEventListener('resize', () => {
+            const currentWidth = window.innerWidth;
+            if ((lastRenderWidth <= 768 && currentWidth > 768) || (lastRenderWidth > 768 && currentWidth <= 768)) {
+                renderAll();
+            }
+            lastRenderWidth = currentWidth;
+        });
     });
     </script>
 </body>
