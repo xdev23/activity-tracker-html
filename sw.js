@@ -1,80 +1,88 @@
-// Define a unique name for the cache. Bump this version number whenever you update the sw.js file.
-const CACHE_NAME = 'activity-tracker-cache-v2';
+// A new version number for our cache. Change this when you update the sw.js file itself.
+const CACHE_NAME = 'activity-tracker-cache-v3';
 
-// List the files that the browser should cache for offline use.
-// Since all your CSS and JS are inside index.html, we only need that one file.
-// We cache both './' (the root) and './index.html' to handle both ways the page can be accessed.
+// The files to cache. Since CSS and JS are inline, we only need the main HTML file.
 const ASSETS_TO_CACHE = [
   './',
   './index.html'
 ];
 
-// INSTALL: This event runs when the service worker is first installed.
+// --- INSTALL: Fired when the service worker is first installed. ---
 self.addEventListener('install', event => {
   event.waitUntil(
-    // Open the cache and add all our specified assets to it.
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('Service Worker: Caching App Shell');
-        return cache.addAll(ASSETS_TO_CACHE);
-      })
-      .then(() => {
-        // Force the new service worker to become active immediately.
-        // This prevents the "waiting" state and makes updates smoother.
-        return self.skipWaiting();
-      })
-  );
-});
-
-// ACTIVATE: This event runs when the service worker becomes active.
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    // Get all existing cache names.
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        // Map over all cache names and delete any that are not our current CACHE_NAME.
-        // This cleans up old, outdated caches.
-        cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('Service Worker: Clearing old cache:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
+    caches.open(CACHE_NAME).then(cache => {
+      console.log('Service Worker: Caching App Shell');
+      return cache.addAll(ASSETS_TO_CACHE);
     }).then(() => {
-        // Take control of all open clients (pages) immediately.
-        return self.clients.claim();
+      // Force the new service worker to become active immediately.
+      return self.skipWaiting();
     })
   );
 });
 
-// FETCH: This event runs for every network request made by the page.
+// --- ACTIVATE: Fired when the service worker becomes active. ---
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        // Clean up old caches that don't match the current CACHE_NAME.
+        cacheNames.filter(cacheName => cacheName !== CACHE_NAME).map(cacheName => {
+          console.log('Service Worker: Deleting old cache:', cacheName);
+          return caches.delete(cacheName);
+        })
+      );
+    }).then(() => {
+      // Take control of all open pages.
+      return self.clients.claim();
+    })
+  );
+});
+
+// --- FETCH: Intercepts all network requests. (FIX for OFFLINE ERROR) ---
 self.addEventListener('fetch', event => {
-  // We only want to cache GET requests for http/https resources.
+  // We only handle GET requests for our assets.
   if (event.request.method !== 'GET' || !event.request.url.startsWith('http')) {
       return;
   }
 
-  // This is the "stale-while-revalidate" strategy.
   event.respondWith(
-    caches.open(CACHE_NAME).then(cache => {
-        return cache.match(event.request)
-            .then(cachedResponse => {
-                // 1. Try to get the response from the cache.
-                const fetchPromise = fetch(event.request).then(
-                    networkResponse => {
-                        // 2. While serving the cached version (if any), also go to the network.
-                        if (networkResponse.ok) {
-                            // 3. If the network request is successful, update the cache with the new version.
-                            cache.put(event.request, networkResponse.clone());
-                        }
-                        return networkResponse;
-                    }
-                );
-
-                // Return the cached response immediately if it exists, otherwise wait for the network.
-                return cachedResponse || fetchPromise;
-            });
+    // Strategy: Cache, falling back to Network.
+    caches.match(event.request).then(cachedResponse => {
+      // If the response is in the cache, return it immediately.
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+      // If not in cache, try to fetch it from the network.
+      // The .catch() handles the case where the network request fails (e.g., offline).
+      return fetch(event.request).catch(() => {
+         console.error('SW: Fetch failed. User is likely offline and resource is not in cache.');
+         // This prevents the "TypeError: Failed to fetch" by returning an empty error response.
+         return new Response(null, { status: 503, statusText: 'Service Unavailable' });
+      });
     })
   );
+});
+
+
+// --- MESSAGE: Listens for commands from the main page. (NEW FEATURE) ---
+self.addEventListener('message', event => {
+  if (event.data && event.data.action === 'FORCE_UPDATE') {
+    console.log('Service Worker: Force update command received.');
+    swStatus.textContent = 'Forcing update from network...';
+    // When the page sends this message, we force a re-fetch of the main page
+    // and update the cache with the new version.
+    const updatePromise = caches.open(CACHE_NAME).then(cache => {
+      // Fetch with 'no-cache' to bypass the browser's regular HTTP cache.
+      return fetch('./index.html', { cache: 'no-store' }).then(networkResponse => {
+        if (networkResponse.ok) {
+          console.log('Service Worker: Updating cache with new index.html');
+          // We must cache for both './' and './index.html' keys.
+          cache.put('./', networkResponse.clone());
+          cache.put('./index.html', networkResponse);
+        }
+        return networkResponse;
+      });
+    });
+    event.waitUntil(updatePromise);
+  }
 });
