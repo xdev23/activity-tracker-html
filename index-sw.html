@@ -410,7 +410,7 @@
                     <button data-action="toggle-theme" class="btn" style="font-size: 12px;">Toggle Theme</button>
                 </div>
             </h1>
-            <p class="tagline">Yes. Your personal journey, one day at a time.</p>
+            <p class="tagline">Your personal journey, one day at a time.</p>
 
             <details id="manage-activities-section">
                 <summary>Manage Activities and Backup</summary>
@@ -436,7 +436,7 @@
                         <p id="sw-status"></p>
                         <button id="sw-install-btn" class="btn">Enable Offline Mode</button>
                         <button id="sw-remove-btn" class="btn" style="display: none;">Disable Offline Mode</button>
-                        <button id="sw-update-btn" class="btn" style="display: none;">Check for Updates</button>
+                        <button id="sw-update-btn" class="btn" style="display: none;">Update Now</button>
                     </div>
 
                 </div>
@@ -1121,11 +1121,6 @@
         const swStatus = document.getElementById('sw-status');
         const swControls = document.getElementById('sw-controls');
 
-        function getServiceWorkerScope() {
-            const path = window.location.pathname;
-            return path.substring(0, path.lastIndexOf('/') + 1);
-        }
-
         function updateSWButtonUI() {
             if (!('serviceWorker' in navigator)) {
                 swControls.style.display = 'none';
@@ -1147,9 +1142,12 @@
 
         swInstallBtn.addEventListener('click', () => {
             swStatus.textContent = 'Enabling offline mode...';
-            navigator.serviceWorker.register('./sw.js', { scope: getServiceWorkerScope() })
+            // The scope determines which files the service worker can control.
+            // './' is the root of the current directory.
+            navigator.serviceWorker.register('./sw.js', { scope: './' })
                 .then(registration => {
                     console.log('Service Worker registered with scope:', registration.scope);
+                    // The page will reload automatically once the SW takes control.
                 })
                 .catch(error => {
                     console.error('Service Worker registration failed:', error);
@@ -1172,28 +1170,22 @@
                 }
             });
         });
-
+        
+        // This button now sends a message to the service worker to force an update.
         swUpdateBtn.addEventListener('click', () => {
-            navigator.serviceWorker.getRegistration().then(registration => {
-                if (registration) {
-                    swStatus.textContent = 'Checking for updates...';
-                    registration.update().then(() => {
-                        if (registration.installing) {
-                             swStatus.textContent = 'New version found, installing...';
-                        } else if (registration.waiting) {
-                            swStatus.textContent = 'New version ready. Please reload the page to update.';
-                        } else if (registration.active) {
-                            swStatus.textContent = 'You are on the latest version.';
-                        }
-                    }).catch(error => {
-                        swStatus.textContent = 'Update check failed. Are you offline?';
-                    });
-                }
-            });
+            if (navigator.serviceWorker.controller) {
+                swStatus.textContent = 'Forcing update from network...';
+                navigator.serviceWorker.controller.postMessage({ action: 'FORCE_UPDATE' });
+            } else {
+                swStatus.textContent = 'Cannot update. No active service worker.';
+            }
         });
-
+        
+        // This listener waits for the service worker to take control and then reloads
+        // the page to ensure the user is seeing the cached version.
         navigator.serviceWorker.addEventListener('controllerchange', () => {
-            console.log('Controller changed. Reloading page.');
+            console.log('Controller changed. Reloading page to apply updates.');
+            swStatus.textContent = 'App updated. Reloading...';
             window.location.reload();
         });
 
