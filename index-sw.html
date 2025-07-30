@@ -240,7 +240,6 @@
             padding-top: 15px !important;
         }
 
-        /* --- START: CSS for Service Worker controls --- */
         #sw-controls {
             margin-top: 15px;
             padding-top: 15px;
@@ -256,7 +255,6 @@
             flex-basis: 100%;
             margin: 0 0 5px 0;
         }
-        /* --- END: CSS for Service Worker controls --- */
 
         @media (max-width: 600px) {
             :root {
@@ -434,14 +432,12 @@
                         <input type="file" id="import-file" accept=".json" style="display: none;">
                     </div>
 
-                    <!-- START: HTML for Service Worker controls -->
                     <div id="sw-controls">
                         <p id="sw-status"></p>
                         <button id="sw-install-btn" class="btn">Enable Offline Mode</button>
                         <button id="sw-remove-btn" class="btn" style="display: none;">Disable Offline Mode</button>
                         <button id="sw-update-btn" class="btn" style="display: none;">Check for Updates</button>
                     </div>
-                    <!-- END: HTML for Service Worker controls -->
 
                 </div>
             </details>
@@ -770,7 +766,8 @@
             list.innerHTML = `<li class="list-header"><span>Date</span><span>Time Spent</span><span>Daily Goal</span><span>Goal Achieved</span></li>`;
 
             if (loggedEntries.length === 0) {
-                listContainer.innerHTML `<p style="font-size: 13px; color: var(--text-muted-color); margin-top: 10px;">No historical activity recorded.</p>`;
+                // *** THIS IS THE CORRECTED LINE ***
+                listContainer.innerHTML = `<p style="font-size: 13px; color: var(--text-muted-color); margin-top: 10px;">No historical activity recorded.</p>`;
                 return;
             }
 
@@ -1151,7 +1148,6 @@
                 .then(registration => {
                     console.log('Service Worker registered with scope:', registration.scope);
                     swStatus.textContent = 'Offline mode enabled successfully! The app will now work without internet.';
-                    // A page reload is needed for the SW to take control
                     location.reload(); 
                 })
                 .catch(error => {
@@ -1166,7 +1162,6 @@
                     registration.unregister().then(isUnregistered => {
                         if (isUnregistered) {
                             console.log('Service Worker unregistered');
-                            // Also clear the cache
                             caches.keys().then(keys => {
                                 keys.forEach(key => caches.delete(key));
                             });
@@ -1195,14 +1190,12 @@
             });
         });
         
-        // Listen for when a new SW has been installed and is waiting
         navigator.serviceWorker.addEventListener('message', event => {
             if (event.data && event.data.type === 'NEW_VERSION_INSTALLED') {
                  swStatus.textContent = 'A new version has been installed. Please reload the page.';
             }
         });
 
-        // Initialize the UI on page load
         updateSWButtonUI();
         // --- END: Service Worker Logic ---
     });
