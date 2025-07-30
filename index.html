@@ -218,6 +218,33 @@
         .reorder-btn:hover:not(:disabled) { background-color: var(--btn-hover-bg-color); }
         .reorder-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
+        /* --- START: Added styles for the collapsible container --- */
+        #manage-activities-section {
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+        #manage-activities-section summary {
+            padding: 12px 16px;
+            cursor: pointer;
+            font-weight: 500;
+            list-style-position: inside;
+        }
+        #manage-activities-section[open] > summary {
+            border-bottom: 1px solid var(--border-color);
+        }
+        .collapsible-content-wrapper {
+            padding: 16px;
+        }
+        /* Override original top border and padding for data-io since the wrapper handles it now */
+        .data-io {
+            margin-top: 15px;
+            border-top: 1px solid var(--border-color) !important;
+            padding-top: 15px !important;
+        }
+        /* --- END: Added styles for the collapsible container --- */
+
         @media (max-width: 600px) {
             :root {
                 --day-size: 20px;
@@ -373,22 +400,31 @@
                 </div>
             </h1>
             <p class="tagline">Your personal journey, one day at a time.</p>
-            <div class="controls">
-                <div class="input-group">
-                    <label for="activity-name-input">Activity Name</label>
-                    <input type="text" id="activity-name-input" placeholder="e.g., Learning a Language">
+
+            <!-- START: Modified HTML structure for collapsible section -->
+            <details id="manage-activities-section">
+                <summary>Manage Activities and Backup</summary>
+                <div class="collapsible-content-wrapper">
+                    <div class="controls">
+                        <div class="input-group">
+                            <label for="activity-name-input">Activity Name</label>
+                            <input type="text" id="activity-name-input" placeholder="e.g., Learning a Language">
+                        </div>
+                         <div class="input-group">
+                            <label for="activity-goal-input">Goal (minutes)</label>
+                            <input type="number" id="activity-goal-input" value="15" min="1">
+                        </div>
+                        <button data-action="add-activity" class="btn">Add Activity</button>
+                    </div>
+                     <div class="data-io" style="margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                        <button data-action="export" class="btn">Export Data</button>
+                        <label for="import-file" class="btn">Import Data</label>
+                        <input type="file" id="import-file" accept=".json" style="display: none;">
+                    </div>
                 </div>
-                 <div class="input-group">
-                    <label for="activity-goal-input">Goal (minutes)</label>
-                    <input type="number" id="activity-goal-input" value="15" min="1">
-                </div>
-                <button data-action="add-activity" class="btn">Add Activity</button>
-            </div>
-             <div class="data-io" style="margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 15px;">
-                <button data-action="export" class="btn">Export Data</button>
-                <label for="import-file" class="btn">Import Data</label>
-                <input type="file" id="import-file" accept=".json" style="display: none;">
-            </div>
+            </details>
+            <!-- END: Modified HTML structure -->
+
         </div>
         <div id="activities-container"></div>
         <div id="archived-container" class="card" style="display: none;">
@@ -442,6 +478,31 @@
             return `${year}-${month}-${day}`;
         }
 
+        // --- START: Corrected function to scroll all activity graphs to today's date ---
+        function scrollToTodayForAllActivities() {
+            // Get all visible activity cards
+            const activityCards = document.querySelectorAll('.activity-card');
+            
+            // Loop through each card
+            activityCards.forEach(card => {
+                // Find the 'today' cell and the scroll wrapper *within the current card*
+                const todayCell = card.querySelector('.day.is-today');
+                const scrollWrapper = card.querySelector('.graph-scroll-wrapper');
+                
+                if (todayCell && scrollWrapper) {
+                    // Calculate the position to center the 'today' cell
+                    const scrollLeftPosition = todayCell.offsetLeft - (scrollWrapper.offsetWidth / 2) + (todayCell.offsetWidth / 2);
+                    
+                    // Scroll the wrapper to the calculated position
+                    scrollWrapper.scrollTo({
+                        left: scrollLeftPosition,
+                        behavior: 'auto' // Use 'auto' for instant positioning on load
+                    });
+                }
+            });
+        }
+        // --- END: Corrected function ---
+
         function renderAll() {
             const activeNames = activityOrder.filter(name => activities[name] && !activities[name].isArchived);
             const archivedNames = Object.keys(activities).filter(name => activities[name] && activities[name].isArchived).sort();
@@ -454,6 +515,15 @@
             
             archivedContainer.style.display = archivedNames.length > 0 ? 'block' : 'none';
             reorderBtn.style.display = activeNames.length > 1 ? 'inline-block' : 'none';
+
+            const manageSection = document.getElementById('manage-activities-section');
+            if (manageSection) {
+                manageSection.open = activeNames.length === 0;
+            }
+
+            // --- START: Call the corrected scroll function after rendering everything ---
+            setTimeout(scrollToTodayForAllActivities, 50); 
+            // --- END: Call to scroll function ---
         }
 
         function renderActivityCard(name, activityData) {
