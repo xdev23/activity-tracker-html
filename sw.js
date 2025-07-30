@@ -1,7 +1,6 @@
 // A new version number for our cache. Change this when you update the sw.js file itself.
-const CACHE_NAME = 'activity-tracker-cache-v6';
+const CACHE_NAME = 'activity-tracker-cache-v7';
 
-// The files to cache. Since CSS and JS are inline, we only need the main HTML file.
 const ASSETS_TO_CACHE = [
   './',
   './index.html'
@@ -35,20 +34,14 @@ self.addEventListener('activate', event => {
   );
 });
 
-// --- FETCH: Intercepts all network requests. (CORRECTED OFFLINE LOGIC) ---
+// --- FETCH: Intercepts all network requests. ---
 self.addEventListener('fetch', event => {
-  // We only handle GET requests.
   if (event.request.method !== 'GET') {
     return;
   }
-
-  // Strategy: Network first, falling back to cache.
-  // This is ideal for the main HTML file to ensure users get updates when online.
   event.respondWith(
     fetch(event.request)
       .then(networkResponse => {
-        // If the network request is successful, update the cache with the new version.
-        // This keeps the offline version fresh.
         if (networkResponse.ok) {
           const responseClone = networkResponse.clone();
           caches.open(CACHE_NAME).then(cache => {
@@ -58,7 +51,6 @@ self.addEventListener('fetch', event => {
         return networkResponse;
       })
       .catch(() => {
-        // If the network request fails (user is offline), serve the content from the cache.
         console.log('SW: Network fetch failed, serving from cache.');
         return caches.match(event.request);
       })
@@ -66,7 +58,7 @@ self.addEventListener('fetch', event => {
 });
 
 
-// --- MESSAGE: Listens for commands from the main page. (CORRECTED) ---
+// --- MESSAGE: Listens for commands from the main page. ---
 self.addEventListener('message', event => {
   if (event.data && event.data.action === 'FORCE_UPDATE') {
     console.log('Service Worker: Force update command received.');
@@ -79,14 +71,18 @@ self.addEventListener('message', event => {
           cache.put('./', networkResponse.clone());
           cache.put('./index.html', networkResponse);
           
-          // Use the CORRECT method: self.clients.matchAll()
           self.clients.matchAll().then(clients => {
               clients.forEach(client => client.postMessage({ type: 'UPDATE_COMPLETE' }));
           });
         }
         return networkResponse;
       }).catch(err => {
+          // *** NEW CODE BLOCK ***
+          // If the fetch fails, notify the page so it can update the UI.
           console.error('SW: Force update fetch failed:', err);
+          self.clients.matchAll().then(clients => {
+              clients.forEach(client => client.postMessage({ type: 'UPDATE_FAILED' }));
+          });
       });
     });
 
