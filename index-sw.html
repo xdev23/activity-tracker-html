@@ -410,7 +410,7 @@
                     <button data-action="toggle-theme" class="btn" style="font-size: 12px;">Toggle Theme</button>
                 </div>
             </h1>
-            <p class="tagline">Yes. Your personal journey, one day at a time.</p>
+            <p class="tagline">Your personal journey, one day at a time.</p>
 
             <details id="manage-activities-section">
                 <summary>Manage Activities and Backup</summary>
@@ -1168,7 +1168,14 @@
             });
         });
         
+        // *** MODIFIED BLOCK ***
         swUpdateBtn.addEventListener('click', () => {
+            // First, check if the browser is online for instant feedback.
+            if (!navigator.onLine) {
+                swStatus.textContent = 'Cannot update while offline.';
+                return;
+            }
+
             if (navigator.serviceWorker.controller) {
                 swStatus.textContent = 'Forcing update from network...';
                 navigator.serviceWorker.controller.postMessage({ action: 'FORCE_UPDATE' });
@@ -1178,20 +1185,19 @@
         });
         
         navigator.serviceWorker.addEventListener('controllerchange', () => {
-            // This event fires when the service worker controlling this page changes.
-            // This happens after a successful registration and activation.
             console.log('Controller changed. Reloading page to apply updates.');
             swStatus.textContent = 'App updated. Reloading...';
-            // We reload to ensure the page is served by the new service worker.
             window.location.reload();
         });
 
+        // *** MODIFIED BLOCK ***
         navigator.serviceWorker.addEventListener('message', event => {
-            // This listens for the 'UPDATE_COMPLETE' message from the sw.js
             if (event.data && event.data.type === 'UPDATE_COMPLETE') {
                 swStatus.textContent = 'App has been updated. Reload the page to see the changes.';
-                // We show an info modal instead of forcing a reload, as that can be disruptive.
                 showInfoModal('Update Complete', 'The latest version of the app has been saved. Please reload the page to apply the changes.');
+            } else if (event.data && event.data.type === 'UPDATE_FAILED') {
+                // Listen for the new failure message from the SW.
+                swStatus.textContent = 'Update failed. Please check your connection and try again.';
             }
         });
 
