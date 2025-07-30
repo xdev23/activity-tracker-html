@@ -1142,12 +1142,9 @@
 
         swInstallBtn.addEventListener('click', () => {
             swStatus.textContent = 'Enabling offline mode...';
-            // The scope determines which files the service worker can control.
-            // './' is the root of the current directory.
             navigator.serviceWorker.register('./sw.js', { scope: './' })
                 .then(registration => {
                     console.log('Service Worker registered with scope:', registration.scope);
-                    // The page will reload automatically once the SW takes control.
                 })
                 .catch(error => {
                     console.error('Service Worker registration failed:', error);
@@ -1171,7 +1168,6 @@
             });
         });
         
-        // This button now sends a message to the service worker to force an update.
         swUpdateBtn.addEventListener('click', () => {
             if (navigator.serviceWorker.controller) {
                 swStatus.textContent = 'Forcing update from network...';
@@ -1181,12 +1177,22 @@
             }
         });
         
-        // This listener waits for the service worker to take control and then reloads
-        // the page to ensure the user is seeing the cached version.
         navigator.serviceWorker.addEventListener('controllerchange', () => {
+            // This event fires when the service worker controlling this page changes.
+            // This happens after a successful registration and activation.
             console.log('Controller changed. Reloading page to apply updates.');
             swStatus.textContent = 'App updated. Reloading...';
+            // We reload to ensure the page is served by the new service worker.
             window.location.reload();
+        });
+
+        navigator.serviceWorker.addEventListener('message', event => {
+            // This listens for the 'UPDATE_COMPLETE' message from the sw.js
+            if (event.data && event.data.type === 'UPDATE_COMPLETE') {
+                swStatus.textContent = 'App has been updated. Reload the page to see the changes.';
+                // We show an info modal instead of forcing a reload, as that can be disruptive.
+                showInfoModal('Update Complete', 'The latest version of the app has been saved. Please reload the page to apply the changes.');
+            }
         });
 
         updateSWButtonUI();
