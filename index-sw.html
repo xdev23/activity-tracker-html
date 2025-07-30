@@ -345,7 +345,7 @@
             }
         }
         
-                .about-card {
+        .about-card {
             margin-top: 20px;
         }
 
@@ -766,7 +766,6 @@
             list.innerHTML = `<li class="list-header"><span>Date</span><span>Time Spent</span><span>Daily Goal</span><span>Goal Achieved</span></li>`;
 
             if (loggedEntries.length === 0) {
-                // *** THIS IS THE CORRECTED LINE ***
                 listContainer.innerHTML = `<p style="font-size: 13px; color: var(--text-muted-color); margin-top: 10px;">No historical activity recorded.</p>`;
                 return;
             }
@@ -1122,6 +1121,11 @@
         const swStatus = document.getElementById('sw-status');
         const swControls = document.getElementById('sw-controls');
 
+        function getServiceWorkerScope() {
+            const path = window.location.pathname;
+            return path.substring(0, path.lastIndexOf('/') + 1);
+        }
+
         function updateSWButtonUI() {
             if (!('serviceWorker' in navigator)) {
                 swControls.style.display = 'none';
@@ -1129,13 +1133,11 @@
             }
             
             if (navigator.serviceWorker.controller) {
-                // A service worker is currently controlling the page
                 swStatus.textContent = 'Offline mode is enabled.';
                 swInstallBtn.style.display = 'none';
                 swRemoveBtn.style.display = 'inline-block';
                 swUpdateBtn.style.display = 'inline-block';
             } else {
-                // No service worker is controlling the page
                 swStatus.textContent = 'Enable offline mode to use the app without an internet connection.';
                 swInstallBtn.style.display = 'inline-block';
                 swRemoveBtn.style.display = 'none';
@@ -1144,11 +1146,10 @@
         }
 
         swInstallBtn.addEventListener('click', () => {
-            navigator.serviceWorker.register('./sw.js')
+            swStatus.textContent = 'Enabling offline mode...';
+            navigator.serviceWorker.register('./sw.js', { scope: getServiceWorkerScope() })
                 .then(registration => {
                     console.log('Service Worker registered with scope:', registration.scope);
-                    swStatus.textContent = 'Offline mode enabled successfully! The app will now work without internet.';
-                    location.reload(); 
                 })
                 .catch(error => {
                     console.error('Service Worker registration failed:', error);
@@ -1162,11 +1163,8 @@
                     registration.unregister().then(isUnregistered => {
                         if (isUnregistered) {
                             console.log('Service Worker unregistered');
-                            caches.keys().then(keys => {
-                                keys.forEach(key => caches.delete(key));
-                            });
-                            swStatus.textContent = 'Offline mode disabled. Reloading to switch to online version.';
-                            setTimeout(() => location.reload(), 1500);
+                            swStatus.textContent = 'Offline mode disabled. Reloading...';
+                            setTimeout(() => window.location.reload(), 1500);
                         } else {
                             swStatus.textContent = 'Error: Failed to disable offline mode.';
                         }
@@ -1179,21 +1177,24 @@
             navigator.serviceWorker.getRegistration().then(registration => {
                 if (registration) {
                     swStatus.textContent = 'Checking for updates...';
-                    registration.update().then(newRegistration => {
-                       if (newRegistration && newRegistration.installing) {
-                           swStatus.textContent = 'New version found, installing...';
-                       } else {
-                           swStatus.textContent = 'You are on the latest version.';
-                       }
+                    registration.update().then(() => {
+                        if (registration.installing) {
+                             swStatus.textContent = 'New version found, installing...';
+                        } else if (registration.waiting) {
+                            swStatus.textContent = 'New version ready. Please reload the page to update.';
+                        } else if (registration.active) {
+                            swStatus.textContent = 'You are on the latest version.';
+                        }
+                    }).catch(error => {
+                        swStatus.textContent = 'Update check failed. Are you offline?';
                     });
                 }
             });
         });
-        
-        navigator.serviceWorker.addEventListener('message', event => {
-            if (event.data && event.data.type === 'NEW_VERSION_INSTALLED') {
-                 swStatus.textContent = 'A new version has been installed. Please reload the page.';
-            }
+
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            console.log('Controller changed. Reloading page.');
+            window.location.reload();
         });
 
         updateSWButtonUI();
